@@ -1,0 +1,9 @@
+# First exclude everything
+*
+
+# Include what we need
+!config/**
+!dist/**
+!public/**
+!views/**
+!lib/**

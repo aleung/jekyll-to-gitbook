@@ -1,0 +1,30 @@
+{
+  "name": "jekyll-to-gitbook",
+  "version": "1.0.0",
+  "description": "Convert Jekyll site to GitBook",
+  "license": "MIT",
+  "main": "build/index.js",
+  "engines": {
+    "node": "^5.0.0"
+  },
+  "dependencies": {
+    "glob": "7.0.3"
+  },
+  "devDependencies": {
+    "babel-preset-es2015-node5": "^1.1.1",
+    "del": "^2.2.0",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^6.1.1",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-tsconfig-files": "0.3.0",
+    "gulp-tsfmt": "^1.0.2",
+    "gulp-tslint": "^4.2.2",
+    "gulp-typescript": "^2.10.0",
+    "merge-stream": "^1.0.0",
+    "source-map-support": "^0.4.0",
+    "tslint": "3.3.0",
+    "tslint-eslint-rules": "*",
+    "typescript": "^1.8.0",
+    "yargs": "^3.32.0"
+  }
+}
