@@ -13,7 +13,7 @@ const tslint = require("gulp-tslint");
 Error.stackTraceLimit = Infinity;
 
 const tsconfig = typescript.createProject('tsconfig.json', { typescript: require('typescript') });
-const tsCompileContext = ['./src/**/*.ts', './test/**/*.ts', './typings/tsd.d.ts'];
+const tsCompileContext = ['./src/**/*.ts', './test/**/*.ts', './typings/main.d.ts'];
 const tsSourceCode = ['src/**/*.ts', 'test/**/*.ts'];
 
 // Available tasks:
@@ -22,7 +22,7 @@ const tsSourceCode = ['src/**/*.ts', 'test/**/*.ts'];
 // - build
 // - lint
 
-gulp.task('default', ['lint']);
+gulp.task('default', ['build', 'lint']);
 
 // clean generated files
 gulp.task('clean', () => {
