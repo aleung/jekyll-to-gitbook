@@ -1,6 +1,7 @@
 import * as R from 'ramda'
 import * as _glob from 'glob';
 import * as path from 'path';
+import * as _mv from 'mv';
 import * as fs from 'fs';
 
 function promisify<T>(f: Function) {
@@ -14,6 +15,17 @@ function promisify<T>(f: Function) {
     }));
 }
 
+const log = R.curry(
+  (msg, data) => {
+    if (msg) {
+      console.log(msg, data);
+    } else {
+      console.log(data);
+    }
+    return data;
+  }
+);
+
 
 const glob = R.curry(
   (pattern: string, path: string) =>
@@ -21,42 +33,52 @@ const glob = R.curry(
 );
 
 
-function printFileName(file: string) {
-  console.log(`Convert ${file}`);
-  return file;
-}
+const mv = promisify<void>(_mv);
 
-function catchError(ignore, err) {
-  if (err) {
-    console.log(err);
-  }
-}
-
-const mkdir = promisify<void>(fs.mkdir);
-const mv = promisify<void>(fs.rename);
-
-const filterNotMove = R.curry((patterns: string[], file: string) => {
+const inName = R.curry((patterns: string[], file: string) => {
   const {name} = path.parse(file);
-  return !R.contains(name, patterns);
+  return R.contains(name, patterns);
 });
 
-async function moveToIndex(file: string) {
+
+async function moveToIndex(file: string): Promise<string> {
   const {root, dir, name, ext} = path.parse(file);
   if (name !== 'index') {
     const newFolder = path.resolve(root, dir, name);
     const newFile = path.resolve(newFolder, `index${ext}`);
-    console.log(`Move ${file} to ${newFile}`);
-    await mkdir(newFolder);
-    await mv(file, newFile);
+    console.log(`Move ${file}`);
+    console.log(`... to ${newFile}`);
+    await mv(file, newFile, { mkdirp: true });
+    return newFile;
   }
+  return file;
 }
 
-const run = R.pipeP(
-  glob('/**/*.md'),
-  R.map(printFileName),
-  R.filter(filterNotMove(['index', 'README', 'SUMMARY'])),
-  R.map(moveToIndex),
-  catchError
+
+// (string -> string) -> file -> string
+const convert = R.curry((fn, file) => {
+  fs.writeFileSync(file, fn(fs.readFileSync(file)));
+});
+
+function convertMarkdown(content: string): string {
+  // TODO
+  return 'Converted: \n\n' + content;
+}
+
+
+// file -> void
+const processMarkdown = R.pipeP(
+  (file) => inName(['README', 'SUMMARY', 'index'], file) ? Promise.resolve(file) : moveToIndex(file),
+  log('Convert'),
+  convert(convertMarkdown)
 );
 
-run(process.argv[2]);
+
+// dir -> void
+const run = R.pipeP(
+  glob('/**/*.md'),
+  R.map(processMarkdown)
+);
+
+
+run(process.argv[2]).then(log(), log());

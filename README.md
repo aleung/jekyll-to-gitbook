@@ -11,5 +11,5 @@ Clone and modify it to fit your need._
    theme, templates, plugins, configuration should be excluded.
 1. Run converter:
 
-    node build/src/index.js /path/to/gitbook/project
+    node build/index.js /path/to/gitbook/project
 
