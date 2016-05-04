@@ -43,32 +43,32 @@ const inName = R.curry((patterns: string[], file: string) => {
 
 async function moveToIndex(file: string): Promise<string> {
   const {root, dir, name, ext} = path.parse(file);
-  if (name !== 'index') {
-    const newFolder = path.resolve(root, dir, name);
-    const newFile = path.resolve(newFolder, `index${ext}`);
-    console.log(`Move ${file}`);
-    console.log(`... to ${newFile}`);
-    await mv(file, newFile, { mkdirp: true });
-    return newFile;
-  }
-  return file;
+  const newFolder = path.resolve(root, dir, name === 'index' ? 'home' : name);
+  const newFile = path.resolve(newFolder, `index${ext}`);
+  console.log(`Move ${file}`);
+  console.log(`... to ${newFile}`);
+  await mv(file, newFile, { mkdirp: true });
+  return newFile;
 }
 
 
 // (string -> string) -> file -> string
 const convert = R.curry((fn, file) => {
-  fs.writeFileSync(file, fn(fs.readFileSync(file)));
+  fs.writeFileSync(file, fn(fs.readFileSync(file, 'utf8')));
 });
 
 function convertMarkdown(content: string): string {
+  content = content.replace(/{%\s*img\s+([^\s]*)\s*%}/g, '![]($1)');
+  content = content.replace(/{%\s*plantuml\s*%}/g, '{% plantuml format="png" %}');
+  content = content.replace(/{:\s*toc\s*}/g, '<!-- toc -->');
   // TODO
-  return 'Converted: \n\n' + content;
+  return content;
 }
 
 
 // file -> void
 const processMarkdown = R.pipeP(
-  (file) => inName(['README', 'SUMMARY', 'index'], file) ? Promise.resolve(file) : moveToIndex(file),
+  (file) => inName(['README', 'SUMMARY'], file) ? Promise.resolve(file) : moveToIndex(file),
   log('Convert'),
   convert(convertMarkdown)
 );
