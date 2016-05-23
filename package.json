@@ -8,6 +8,7 @@
     "node": "^5.0.0"
   },
   "dependencies": {
+    "front-matter": "^2.0.8",
     "glob": "7.0.3",
     "mv": "^2.1.1",
     "ramda": "^0.19.1"

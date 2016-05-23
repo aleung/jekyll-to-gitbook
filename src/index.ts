@@ -3,6 +3,9 @@ import * as _glob from 'glob';
 import * as path from 'path';
 import * as _mv from 'mv';
 import * as fs from 'fs';
+import * as fm from 'front-matter';
+
+const projectPath = process.argv[2];
 
 function promisify<T>(f: Function) {
   return (...args) =>
@@ -51,34 +54,74 @@ async function moveToIndex(file: string): Promise<string> {
   return newFile;
 }
 
-
-// (string -> string) -> file -> string
-const convert = R.curry((fn, file) => {
-  fs.writeFileSync(file, fn(fs.readFileSync(file, 'utf8')));
-});
-
-function convertMarkdown(content: string): string {
-  content = content.replace(/{%\s*img\s+([^\s]*)\s*%}/g, '![]($1)');
-  content = content.replace(/{%\s*plantuml\s*%}/g, '{% plantuml format="png" %}');
-  content = content.replace(/{:\s*toc\s*}/g, '<!-- toc -->');
-  // TODO
-  return content;
+interface MarkdownPage {
+  file: string;
+  path: string;
+  content: string;
 }
 
+type MarkdownConvertor = (page: MarkdownPage) => MarkdownPage;
+
+// (string -> string) -> file -> string
+const convert = R.curry((fn: MarkdownConvertor, file) => {
+  const converted = fn({
+    file,
+    path: path.relative(projectPath, file),
+    content: fs.readFileSync(file, 'utf8')
+  });
+  fs.writeFileSync(file, converted.content);
+});
+
+function convertToc(content: string): string {
+  return content.replace(/{:\s*toc\s*}/g, '<!-- toc -->');
+}
+
+function convertImgTag(content: string): string {
+  return content.replace(/{%\s*img\s+([^\s]*)\s*%}/g, '![]($1)');
+}
+
+function convertPlantUmlTag(content: string): string {
+  return content.replace(/{%\s*plantuml\s*%}/g, '{% plantuml format="png" %}');
+}
+
+const addToSummary = R.curry(
+  (summary: fs.WriteStream, page: MarkdownPage) => {
+    const title = fm(page.content).attributes.title;
+    summary.write(`* [${title}](${page.path})\n`);
+    return page;
+  }
+);
+
+const summaryFile = fs.createWriteStream(path.resolve(projectPath, 'SUMMARY.md'));
+
+const convertContentWith = R.curry(
+  (fn, page: MarkdownPage) => R.merge(page, { content: fn(page.content) })
+);
+
+
+// string -> string
+const convertionPineline = R.pipeP(
+  //addToSummary(summaryFile),
+  convertContentWith(convertImgTag),
+  log('md'),
+  convertContentWith(convertPlantUmlTag),
+  convertContentWith(convertToc)
+);
 
 // file -> void
 const processMarkdown = R.pipeP(
   (file) => inName(['README', 'SUMMARY'], file) ? Promise.resolve(file) : moveToIndex(file),
   log('Convert'),
-  convert(convertMarkdown)
+  convert(convertionPineline)
 );
 
 
 // dir -> void
 const run = R.pipeP(
-  glob('/**/*.md'),
+  glob('/@(dev|design|help|project)/**/*.md'),
   R.map(processMarkdown)
 );
 
 
-run(process.argv[2]).then(log(), log());
+run(projectPath).then(log(), log());
+

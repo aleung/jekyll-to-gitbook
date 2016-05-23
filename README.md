@@ -13,3 +13,6 @@ Clone and modify it to fit your need._
 
     node build/index.js /path/to/gitbook/project
 
+Hint:
+
+- To revert changes, use command: `git checkout -- . && git clean -df`
