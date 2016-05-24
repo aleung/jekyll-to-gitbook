@@ -55,6 +55,7 @@ async function moveToIndex(file: string): Promise<string> {
 }
 
 interface MarkdownPage {
+  title: string;
   file: string;
   path: string;
   content: string;
@@ -64,10 +65,12 @@ type MarkdownConvertor = (page: MarkdownPage) => MarkdownPage;
 
 // (string -> string) -> file -> string
 const convert = R.curry((fn: MarkdownConvertor, file) => {
+  const doc = fm(fs.readFileSync(file, 'utf8'));
   const converted = fn({
     file,
+    title: doc.attributes.title,
     path: path.relative(projectPath, file),
-    content: fs.readFileSync(file, 'utf8')
+    content: doc.body
   });
   fs.writeFileSync(file, converted.content);
 });
@@ -77,17 +80,20 @@ function convertToc(content: string): string {
 }
 
 function convertImgTag(content: string): string {
-  return content.replace(/{%\s*img\s+([^\s]*)\s*%}/g, '![]($1)');
+  return content.replace(/{%\s*img\s+([^\s]+\s+)?([^\s]+)\s*%}/g, '![]($2)');
 }
 
 function convertPlantUmlTag(content: string): string {
   return content.replace(/{%\s*plantuml\s*%}/g, '{% plantuml format="png" %}');
 }
 
+function addTitle(page: MarkdownPage): MarkdownPage {
+  return R.merge(page, { content: `# ${page.title}\n${page.content}` });
+}
+
 const addToSummary = R.curry(
   (summary: fs.WriteStream, page: MarkdownPage) => {
-    const title = fm(page.content).attributes.title;
-    summary.write(`* [${title}](${page.path})\n`);
+    summary.write(`* [${page.title}](${page.path})\n`);
     return page;
   }
 );
@@ -100,12 +106,12 @@ const convertContentWith = R.curry(
 
 
 // string -> string
-const convertionPineline = R.pipeP(
-  //addToSummary(summaryFile),
+const convertionPineline = R.pipe(
+  addToSummary(summaryFile),
   convertContentWith(convertImgTag),
-  log('md'),
   convertContentWith(convertPlantUmlTag),
-  convertContentWith(convertToc)
+  convertContentWith(convertToc),
+  addTitle
 );
 
 // file -> void
