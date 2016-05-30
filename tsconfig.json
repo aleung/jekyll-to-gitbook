@@ -10,7 +10,6 @@
     "sourceMap": true
   },
   "files": [
-    "src/index.ts",
-    "typings/main.d.ts"
+    "src/index.ts"
   ]
 }

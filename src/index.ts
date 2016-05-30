@@ -80,11 +80,17 @@ function convertToc(content: string): string {
 }
 
 function convertImgTag(content: string): string {
-  return content.replace(/{%\s*img\s+([^\s]+\s+)?([^\s]+)\s*%}/g, '![]($2)');
+  return content.replace(/{%\s*img\s+([^\s]+\s+)?([^\s]+)(\s+[^\s]+)?\s*%}/g, '![]($2)');
 }
 
 function convertPlantUmlTag(content: string): string {
   return content.replace(/{%\s*plantuml\s*%}/g, '{% plantuml format="png" %}');
+}
+
+function convertGist(content: string): string {
+  return content.replace(/{%\s*gist\s([^\s]+)\s*([^\s]+)?\s*%}/g, (match, p1, p2) => {
+    return p2 ? `{% gist id="${p1}" file="${p2}" %}{% endgist %}` : `{% gist id="${p1}" %}{% endgist %}`;
+  });
 }
 
 function addTitle(page: MarkdownPage): MarkdownPage {
@@ -111,6 +117,7 @@ const convertionPineline = R.pipe(
   convertContentWith(convertImgTag),
   convertContentWith(convertPlantUmlTag),
   convertContentWith(convertToc),
+  convertContentWith(convertGist),
   addTitle
 );
 
@@ -124,7 +131,7 @@ const processMarkdown = R.pipeP(
 
 // dir -> void
 const run = R.pipeP(
-  glob('/@(dev|design|help|project)/**/*.md'),
+  glob('/@(dev|design|help|project|posts)/**/*.md'),
   R.map(processMarkdown)
 );
 
