@@ -72,7 +72,7 @@ const convert = R.curry((fn: MarkdownConvertor, file) => {
     path: path.relative(projectPath, file),
     content: doc.body
   });
-  fs.writeFileSync(file, converted.content);
+  fs.writeFileSync(file, `---\n${doc.yaml}\n---\n\n${converted.content}`);
 });
 
 function convertToc(content: string): string {
@@ -89,12 +89,12 @@ function convertPlantUmlTag(content: string): string {
 
 function convertGist(content: string): string {
   return content.replace(/{%\s*gist\s([^\s]+)\s*([^\s]+)?\s*%}/g, (match, p1, p2) => {
-    return p2 ? `{% gist id="${p1}" file="${p2}" %}{% endgist %}` : `{% gist id="${p1}" %}{% endgist %}`;
+    return p2 ? `{% gist id="${p1}",file="${p2}" %}{% endgist %}` : `{% gist id="${p1}" %}{% endgist %}`;
   });
 }
 
 function addTitle(page: MarkdownPage): MarkdownPage {
-  return R.merge(page, { content: `# ${page.title}\n${page.content}` });
+  return R.merge(page, { content: `# ${page.title}\n\n${page.content}` });
 }
 
 const addToSummary = R.curry(
