@@ -1,33 +1,33 @@
 {
   "name": "jekyll-to-gitbook",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Convert Jekyll site to GitBook",
   "license": "MIT",
   "main": "build/index.js",
+  "scripts": {
+    "build": "tsc --pretty",
+    "lint": "tslint --fix --format verbose --project tsconfig.json"
+  },
   "engines": {
-    "node": "^5.0.0"
+    "node": ">8.0.0"
   },
   "dependencies": {
-    "front-matter": "^2.0.8",
-    "glob": "7.0.3",
+    "front-matter": "^3.0.1",
+    "glob": "^7.1.3",
     "mv": "^2.1.1",
-    "ramda": "^0.19.1"
+    "ramda": "^0.26.1"
   },
   "devDependencies": {
-    "babel-preset-es2015-node5": "^1.1.1",
-    "del": "^2.2.0",
-    "gulp": "^3.9.0",
-    "gulp-babel": "^6.1.1",
-    "gulp-sourcemaps": "^1.6.0",
-    "gulp-tsconfig-files": "0.3.0",
-    "gulp-tsfmt": "^1.0.2",
-    "gulp-tslint": "^4.2.2",
-    "gulp-typescript": "^2.10.0",
-    "merge-stream": "^1.0.0",
-    "source-map-support": "^0.4.0",
-    "tslint": "3.3.0",
-    "tslint-eslint-rules": "*",
-    "typescript": "^1.8.0",
-    "yargs": "^3.32.0"
+    "@types/glob": "^7.1.1",
+    "@types/mv": "^2.1.0",
+    "@types/node": "^11.10.5",
+    "@types/ramda": "^0.25.51",
+    "tslint": "5.13.1",
+    "tslint-consistent-codestyle": "1.15.1",
+    "tslint-eslint-rules": "5.4.0",
+    "tslint-no-unused-expression-chai": "0.1.4",
+    "tslint-sonarts": "1.9.0",
+    "tslint-strict-error-throw": "1.0.1",
+    "typescript": "^3.3.3333"
   }
 }

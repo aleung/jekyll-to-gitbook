@@ -1,15 +1,22 @@
 {
   "compilerOptions": {
-    "target": "es6",
     "module": "commonjs",
+    "moduleResolution": "node",
     "outDir": "./build",
-    "noImplicitAny": false,
+    "newLine": "LF",
+    "strict": true,
     "noImplicitReturns": true,
+    "noImplicitThis": false,
     "removeComments": false,
+    "skipLibCheck": true,
     "declaration": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "es2017"
   },
-  "files": [
-    "src/index.ts"
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
   ]
 }

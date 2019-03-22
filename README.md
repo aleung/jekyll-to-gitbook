@@ -10,7 +10,7 @@ Clone and modify it to fit your need._
    Contents are markdown files, images etc. Other files in Jekyll site, e.g.
    theme, templates, plugins, configuration should be excluded.
 1. Run converter:
-
+    yarn install
     node build/index.js /path/to/gitbook/project
 
 Hint:
