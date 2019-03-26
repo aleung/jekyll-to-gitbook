@@ -9,6 +9,8 @@ const projectPath = process.argv[2];
 
 interface FrontMatterAttributes {
   title: string,
+  author?: string,
+  updated?: Date,
 }
 
 // TODO: Use node.js built-in promisify
@@ -57,7 +59,7 @@ async function moveToIndex(file: string): Promise<string> {
   return newFile;
 }
 
-interface MarkdownPage {
+interface MarkdownPage extends FrontMatterAttributes {
   title: string;
   file: string;
   path: string;
@@ -72,14 +74,22 @@ const convert = R.curry((fn: MarkdownConvertor, file: string) => {
   const converted = fn({
     file,
     title: doc.attributes.title,
+    author: doc.attributes.author,
+    updated: doc.attributes.updated,
     path: path.relative(projectPath, file),
     content: doc.body
   });
-  fs.writeFileSync(file, `---\n${doc.frontmatter}\n---\n\n${converted.content}`);
+  // keep front matter:
+  // fs.writeFileSync(file, `---\n${doc.frontmatter}\n---\n\n${converted.content}`);
+  fs.writeFileSync(file, converted.content);
 });
 
-function convertToc(content: string): string {
-  return content.replace(/{:\s*toc\s*}/g, '<!-- toc -->');
+function removeToc(content: string): string {
+  return content.replace(/{:\s*toc\s*}/g, '').replace(/^\* toc$/m, '');
+}
+
+function decreaseHeaderLevel(content: string): string {
+  return content.replace(/^(#+)/mg, '#$1');
 }
 
 function convertImgTag(content: string): string {
@@ -100,8 +110,10 @@ function convertSwagger(content: string): string {
   return content.replace(/{%\s*swagger\s+([^\s]+)\s*%}/g, '[OpenAPI spec file]($1)');
 }
 
-function addTitle(page: MarkdownPage): MarkdownPage {
-  return R.merge(page, { content: `# ${page.title}\n\n${page.content}` });
+function addTitleAuthor(page: MarkdownPage): MarkdownPage {
+  const authorLine = page.author ? `By: ${page.author}\n\n` : '';
+  const dateLine = page.updated ? `Updated: ${page.updated.getUTCFullYear()}-${page.updated.getMonth()+1}-${page.updated.getDate()}\n\n` : '';
+  return R.merge(page, { content: `# ${page.title}\n\n${authorLine}${dateLine}${page.content}` });
 }
 
 const addToSummary = R.curry(
@@ -122,12 +134,13 @@ const convertContentWith = R.curry(
 // string -> string
 const convertionPineline = R.pipe(
   addToSummary(summaryFile),
+  convertContentWith(decreaseHeaderLevel),
   convertContentWith(convertImgTag),
   convertContentWith(convertPlantUmlTag),
-  convertContentWith(convertToc),
+  convertContentWith(removeToc),
   convertContentWith(convertGist),
   convertContentWith(convertSwagger),
-  addTitle
+  addTitleAuthor,
 );
 
 // file -> void
