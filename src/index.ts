@@ -155,7 +155,7 @@ const processMarkdown = R.pipeWith(R.then)([
 // dir -> void
 // @ts-ignore waiting for @types/ramda update
 const run = R.pipeWith(R.then)([
-  glob('/@(dev|design|help|project|posts)/**/*.md'),
+  glob('/[!_]*/**/*.md'),
   R.map(processMarkdown)
 ]);
 

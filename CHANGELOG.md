@@ -1,3 +1,7 @@
+# 1.3.0
+
+* Convert all directories which name does not start with '_'
+
 # 1.2.0
 
 * Decrease heading level by 1 since GitBoot put title to H1.

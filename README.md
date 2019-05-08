@@ -11,6 +11,7 @@ Clone and modify it to fit your need._
    theme, templates, plugins, configuration should be excluded.
 1. Run converter:
     yarn install
+    yarn build
     node build/index.js /path/to/gitbook/project
 
 Hint:
